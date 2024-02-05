@@ -1,0 +1,8 @@
+ls -la 
+code .git 
+addd the token 
+
+
+git add .
+git commit -m 
+git push 

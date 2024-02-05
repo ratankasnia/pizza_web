@@ -1,0 +1,101 @@
+// import { useState } from "react";
+import { formatCurrency } from "../../utils/helpers";
+import PropTypes from "prop-types";
+import placeholaderImage from "../../../public/placeholader-Image.png";
+import Button from "../../ui/Button";
+import { useDispatch, useSelector } from "react-redux";
+import { addItem, getCurrentQuantityById } from "../cart/cartSlice";
+import DeleteItem from "../cart/DeleteItem";
+import UpdateItemQuantity from "../cart/UpdateItemQuantity";
+
+function MenuItem({ pizza }) {
+  const dispatch = useDispatch();
+  const { id, name, unitPrice, ingredients, soldOut, imageUrl } = pizza;
+
+  const currentQuantity = useSelector(getCurrentQuantityById(id));
+  const isInCart = currentQuantity > 0;
+
+  function handleAddToCart() {
+    const newItem = {
+      pizzaId: id,
+      name,
+      quantity: 1,
+      unitPrice,
+      totalPrice: unitPrice * 1,
+    };
+    dispatch(addItem(newItem));
+  }
+  // const [imageLoaded, setImageLoaded] = useState(false);
+
+  // const handleImageLoad = () => {
+  //   setImageLoaded(true);
+  // };
+
+  // const handleImageError = () => {
+  //   setImageLoaded(false);
+  // };
+
+  return (
+    <li className="flex gap-4">
+      <img
+        // src={imageUrl}
+        // src={imageLoaded ? imageUrl : placeholaderImage}
+        // onLoad={handleImageLoad}
+        // onError={handleImageError}
+        placeholder={placeholaderImage}
+        alt={name}
+        src={imageUrl}
+        className={`h-24 ${soldOut ? "Opacity-700 grayscale" : ""}`}
+        onError={({ currentTarget }) => {
+          currentTarget.onerror = null; // prevents looping
+          currentTarget.src = placeholaderImage;
+        }}
+      />
+      <div className="flex flex-grow flex-col pt-0.5">
+        <p className="font-medium">{name}</p>
+        <p className="text-sm capitalize italic text-stone-500">
+          {ingredients.join(", ")}
+        </p>
+        <div className="mt-auto flex items-center justify-between">
+          {!soldOut ? (
+            <p className="text-sm  ">{formatCurrency(unitPrice)}</p>
+          ) : (
+            <p className="text-sm font-medium uppercase text-stone-500">
+              Sold out
+            </p>
+          )}
+
+          {isInCart && (
+            <div className="flex items-center gap-3 sm:gap-8">
+              <UpdateItemQuantity
+                pizzaId={id}
+                currentQuantity={currentQuantity}
+              />
+              <DeleteItem pizzaId={id} />
+            </div>
+          )}
+
+          {!soldOut && !isInCart && (
+            <Button type="small" onClick={handleAddToCart}>
+              Add to cart{" "}
+            </Button>
+          )}
+        </div>
+      </div>
+    </li>
+  );
+}
+
+// Define PropTypes for the component
+MenuItem.propTypes = {
+  pizza: PropTypes.shape({
+    id: PropTypes.number,
+    name: PropTypes.string,
+    unitPrice: PropTypes.number,
+    ingredients: PropTypes.arrayOf(PropTypes.string),
+    soldOut: PropTypes.bool,
+    imageUrl: PropTypes.string,
+  }).isRequired,
+};
+
+export default MenuItem;
